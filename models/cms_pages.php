@@ -29,26 +29,26 @@ class CmsPages extends CmsModel
     }
 
     /**
-     * Adds a new CMS page or updates an existing one
+     * Adds a new CMS page
      *
      * @param array $vars A list of input vars for creating a CMS page, including:
      *  - uri The URI of the page
-     *  - company_id The ID of the company this page belongs to
      *  - lang The language of the page
      *  - title The page title
      *  - content The page content
+     *  - content_type The type of the page content
      */
     public function add(array $vars)
     {
+        $vars['company_id'] = Configure::get('Blesta.company_id');
+
         // Set rules
         $this->Input->setRules($this->getRules($vars));
 
         // Add a new CMS page
         if ($this->Input->validates($vars)) {
-            $fields = ['uri', 'company_id', 'lang', 'title', 'content'];
-            $this->Record->duplicate('title', '=', $vars['title'])->
-                duplicate('content', '=', $vars['content'])->
-                insert('cms_pages', $vars, $fields);
+            $fields = ['uri', 'company_id', 'lang', 'title', 'content', 'content_type'];
+            $this->Record->insert('cms_pages', $vars, $fields);
         }
 
         // Override the parse error with the actual error on failure
@@ -56,14 +56,62 @@ class CmsPages extends CmsModel
     }
 
     /**
-     * Fetches a page at the given URI for the given company
+     * Edits a CMS page
+     * 
+     * @param string $uri The URI of the page to edit
+     * @param string $lang The language of the page to edit
+     * @param array $vars A list of input vars for editing a CMS page, including:
+     *  - uri The URI of the page
+     *  - title The page title
+     *  - content The page content
+     *  - content_type The type of the page content
+     */
+    public function edit($uri, $lang, array $vars)
+    {
+        $vars['lang'] = $lang;
+        $vars['company_id'] = Configure::get('Blesta.company_id');
+
+        // Set rules
+        $this->Input->setRules($this->getRules($vars, true));
+
+        // Edit the CMS page
+        if ($this->Input->validates($vars)) {
+            // If the language exists: edit it - otherwise add the page language
+            if ($this->getLang($uri, $lang)) {
+                $fields = ['uri','title', 'content', 'content_type'];
+                $this->Record->
+                    where('uri', '=', $uri)->
+                    where('lang', '=', $lang)->
+                    update('cms_pages', $vars, $fields);
+            } else {
+                $this->add($vars);
+            }
+        }
+        
+        // Override the parse error with the actual error on failure
+        $this->setParseError();
+    }
+
+    /**
+     * Removes a CMS page with the given URI and all of its language variants
+     * 
+     * @param string $uri The URI of the CMS page to remove 
+     */
+    public function delete($uri) 
+    {
+        $this->Record->from('cms_pages')->
+            where('uri', '=', $uri)->
+            delete();
+    }
+
+    /**
+     * Fetches a page at the given URI
      *
      * @param string $uri The URI of the page
-     * @param int $company_id The ID of the company the page belongs to
      * @param string $lang The language of the page
      * @return mixed An stdClass object representing the CMS page, or false if none exist
      */
-    public function get($uri, $company_id, $lang = null)
+    public function get($uri, $lang = null)
     {
         if (is_null($lang)) {
             $lang = Configure::get('Blesta.language');
@@ -71,14 +119,14 @@ class CmsPages extends CmsModel
 
         $page = $this->Record->select()->from('cms_pages')->
             where('uri', '=', $uri)->
-            where('company_id', '=', $company_id)->
+            where('company_id', '=', Configure::get('Blesta.company_id'))->
             where('lang', '=', $lang)->
             fetch();
 
         if (!$page) {
             $page = $this->Record->select()->from('cms_pages')->
                 where('uri', '=', $uri)->
-                where('company_id', '=', $company_id)->
+                where('company_id', '=', Configure::get('Blesta.company_id'))->
                 where('lang', '=', 'en_us')->
                 fetch();
         }
@@ -87,35 +135,93 @@ class CmsPages extends CmsModel
     }
 
     /**
-     * Returns a list of all pages of a given company
-     *
-     * @param int $company_id The ID of the company the pages belong to
-     * @param array $filters A list of filters for the query
-     * @return array A list of pages for the given company
+     * Fetches a page at the given URI with the specific language
+     * 
+     * @param string $uri The URI of the page
+     * @param string $lang The language of the page
+     * @return mixed An stdClass object representing the CMS page, or false if none exist
      */
-    public function getAll(int $company_id, array $filters = []) : array
+    public function getLang($uri, $lang)
+    {
+        return $this->Record->select()->from('cms_pages')->
+            where('uri', '=', $uri)->
+            where('company_id', '=', Configure::get('Blesta.company_id'))->
+            where('lang', '=', $lang)->
+            fetch();
+    }
+
+    /**
+     * Fetches a page with all of its languages
+     * 
+     * @param string $uri The URI of the page
+     * @return mixed An stdClass object representing the CMS page, or false if none exist
+     */
+    public function getAllLang($uri) : array
     {
         $pages = $this->Record->select()->from('cms_pages')->
-            where('company_id', '=', $company_id);
+            where('uri', '=', $uri)->
+            where('company_id', '=', Configure::get('Blesta.company_id'))->
+            fetchAll();
 
-        if (isset($filters['lang'])) {
-            $pages->where('lang', '=', $filters['lang']);
+        $formatted_pages = [];
+        foreach ($pages as $page) {
+            $formatted_pages[$page->lang] = $page;
         }
 
-        if (isset($filters['uri'])) {
-            $pages->where('uri', '=', $filters['uri']);
-        }
+        return $formatted_pages;
+    }
 
-        return $pages->fetchAll();
+    /**
+     * Returns a list of all pages of the current company. Returns only one language, for all languages use CmsPages::getAllLang()
+     *
+     * @return array An stdClass array of objects representing CMS pages for the given company
+     */
+    public function getAll() : array
+    {
+        return $this->Record->select()->from('cms_pages')->
+            where('company_id', '=', Configure::get('Blesta.company_id'))->
+            where('lang', '=', 'en_us')-> // All pages should have en_us as it can't be deleted
+            fetchAll();
+    }
+
+    /**
+     * Returns a list of pages for the current company
+     * 
+     * @param int $page The page number of results to fetch
+     * @param array $order A key/value pair array of fields to order the results by
+     * @return array An stdClass array of objects representing CMS pages for the given company
+     */
+    public function getList($page = 1, array $order = ['uri' => 'desc']) 
+    {
+        return $this->Record->select()->from('cms_pages')->
+            where('company_id', '=', Configure::get('Blesta.company_id'))->
+            where('lang', '=', 'en_us')-> // All pages should have en_us as it can't be deleted
+            order($order)->
+            limit($this->getPerPage(), (max(1, $page) - 1) * $this->getPerPage())->
+            fetchAll();
+    }
+
+    /**
+     * Returns the total number of pages for the current company
+     * 
+     * @return int The total number of CMS pages for the current company
+     */
+    public function getListCount()
+    {
+        return $this->Record->select()->from('cms_pages')->
+            where('company_id', '=', Configure::get('Blesta.company_id'))->
+            where('lang', '=', 'en_us')-> // All pages should have en_us as it can't be deleted
+            numResults();
     }
 
     /**
      * Retrieves a list of input rules for adding a CMS page
      *
      * @param array $vars A list of input vars
+     * @param bool $edit True if a record is being edited, false otherwise
      * @return array A list of input rules
      */
-    private function getRules(array $vars)
+    private function getRules(array $vars, $edit = false)
     {
         $rules = [
             'uri' => [
@@ -123,6 +229,10 @@ class CmsPages extends CmsModel
                     'rule' => 'isEmpty',
                     'negate' => true,
                     'message' => $this->_('CmsPages.!error.uri.empty')
+                ],
+                'exists' => [
+                    'rule' => [[$this, 'validateUnique'], $vars['lang']],
+                    'message' => $this->_('CmsPages.!error.uri.exists')
                 ]
             ],
             'company_id' => [
@@ -157,8 +267,18 @@ class CmsPages extends CmsModel
                     'message' => $this->_('CmsPages.!error.content.valid', ''),
                     'final' => true
                 ]
-            ]
+            ],
+            'content_type' => [
+                'valid' => [
+                    'rule' => ['in_array', array_keys($this->getContentTypes())],
+                    'message' => $this->_('CmsPages.!error.content_type.valid')
+                ]
+            ]    
         ];
+
+        if ($edit) {
+            unset($rules['uri']['exists']);
+        }
 
         return $rules;
     }
@@ -177,5 +297,30 @@ class CmsPages extends CmsModel
             $errors['content']['valid'] = $this->_('CmsPages.!error.content.valid', $this->parse_error);
         }
         $this->Input->setErrors($errors);
+    }
+
+    /** 
+     * Validates if the given URI and Lang combination is unique (does not exist in the database)
+     * 
+     * @param $uri The URI of the page
+     * @param $lang The language of the page
+     */
+    public function validateUnique($uri, $lang)
+    {
+        return !$this->getLang($uri, $lang);
+    }
+
+    /**
+     * Returns all valid content types
+     * 
+     * @return array A keyed array of content types
+     */
+    public function getContentTypes()
+    {
+        return [
+            'text' => $this->_('CmsPages.content_type.text'),
+            'wysiwyg' => $this->_('CmsPages.content_type.wysiwyg'),
+            'md' => $this->_('CmsPages.content_type.md')
+        ];
     }
 }

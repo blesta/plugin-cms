@@ -38,6 +38,7 @@ class CmsPlugin extends Plugin
                 setField('lang', ['type'=>'varchar', 'size'=>5, 'default' => 'en_us'])->
                 setField('title', ['type'=>'varchar', 'size'=>255])->
                 setField('content', ['type'=>'text'])->
+                setField('content_type', ['type'=>'enum', 'size'=>"'text','wysiwyg','md'"])->
                 setKey(['uri', 'company_id', 'lang'], 'primary')->
                 create('cms_pages', true);
 
@@ -162,6 +163,12 @@ class CmsPlugin extends Plugin
                         update('cms_pages', ['lang' => $lang->value ?? 'en_us'], ['lang']);
                 }
             }
+
+            // Upgrade to v3.0.0
+            if (version_compare($current_version, '3.0.0', '<')) {
+                // Add "content_type" column to the cms_pages table
+                $this->Record->setField('content_type', ['type'=>'enum', 'size'=>"'text','wysiwyg','md'"])->alter('cms_pages');
+            }
         }
     }
 
@@ -201,6 +208,14 @@ class CmsPlugin extends Plugin
      */
     public function getActions()
     {
-        return [];
+        return [
+            // CMS
+            [
+                'action' => 'nav_secondary_staff',
+                'uri' => 'plugin/cms/admin_main/index/',
+                'name' => 'CmsPlugin.nav_secondary_staff.index',
+                'options' => ['parent' => 'tools/']
+            ]
+        ];
     }
 }
