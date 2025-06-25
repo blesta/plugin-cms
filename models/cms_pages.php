@@ -41,6 +41,7 @@ class CmsPages extends CmsModel
     public function add(array $vars)
     {
         $vars['company_id'] = Configure::get('Blesta.company_id');
+        $vars['uri'] = rtrim($vars['uri'], '/') ?: '/';
 
         // Set rules
         $this->Input->setRules($this->getRules($vars));
@@ -70,6 +71,7 @@ class CmsPages extends CmsModel
     {
         $vars['lang'] = $lang;
         $vars['company_id'] = Configure::get('Blesta.company_id');
+        $vars['uri'] = rtrim($vars['uri'], '/') ?: '/';
 
         // Set rules
         $this->Input->setRules($this->getRules($vars, true));
