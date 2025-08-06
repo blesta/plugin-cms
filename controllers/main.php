@@ -50,12 +50,7 @@ class Main extends CmsController
      */
     public function index()
     {
-        $uri = '/';
-        if (isset($this->get[0])) {
-            $uri = $this->get[0];
-        }
-
-        $this->uses(['Cms.CmsPages', 'PluginManager']);
+        $uri = '/' . (rtrim($this->get[0] ?? null, '/'));
 
         // Load the template parser
         $parser_options_html = Configure::get('Blesta.parser_options');
@@ -66,7 +61,7 @@ class Main extends CmsController
         $lang = Configure::get('Blesta.language');
 
         // Check if the page exists
-        if (($page = $this->CmsPages->get($uri, $this->company_id, $lang))) {
+        if (($page = $this->CmsPages->get($uri, $lang))) {
             // Get installed plugins
             $plugins = $this->PluginManager->getAll($this->company_id);
             $installed_plugins = [];
@@ -84,6 +79,12 @@ class Main extends CmsController
                 'admin_url' => $this->Html->safe($url . $this->admin_uri),
                 'plugins' => $installed_plugins
             ];
+
+            // If markdown, convert to HTML first
+            if ($page->content_type == 'md') {
+                $this->helpers(['TextParser']);
+                $page->content = $this->TextParser->encode('markdown', $page->content);
+            }
 
             $page->content = H2o::parseString($page->content, $parser_options_html)->render($tags);
 

@@ -17,7 +17,6 @@ class CmsController extends AppController
 
         // Override default view directory
         $this->view->view = 'default';
-        $this->structure->view = 'default';
 
         // Attempt to write this page to the cache
         try {
