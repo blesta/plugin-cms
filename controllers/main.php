@@ -50,7 +50,10 @@ class Main extends CmsController
      */
     public function index()
     {
-        $uri = '/' . (rtrim($this->get[0] ?? null, '/'));
+        $uri = '/' . (rtrim(
+                implode('/', array_filter($this->get, function($val) { return is_numeric($val); }, ARRAY_FILTER_USE_KEY)),
+                '/'
+            ));
 
         // Load the template parser
         $parser_options_html = Configure::get('Blesta.parser_options');
