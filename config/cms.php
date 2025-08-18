@@ -62,7 +62,7 @@ Configure::set('Cms.index.content_install_notice', '
         <div class="thanks">
             <blockquote>
                 <h4>Thank you for installing Blesta!</h4>
-                <p>This is your client portal page, and you may wish to link here from your website. This message can be removed through the staff area under Settings > Plugins > Portal: Manage.</p>
+                <p>This is your client portal page, and you may wish to link here from your website. This message can be removed through the staff area under Tools > CMS: Edit.</p>
                 <p>
                     <ul>
                         <li>You may log into the staff area at <a href="{admin_url}">{admin_url}login/</a>.</li>
