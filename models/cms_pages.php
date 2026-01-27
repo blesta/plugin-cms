@@ -83,6 +83,7 @@ class CmsPages extends CmsModel
                 $fields = ['uri','title', 'content', 'content_type'];
                 $this->Record->
                     where('uri', '=', $uri)->
+                    where('company_id', '=', $vars['company_id'])->
                     where('lang', '=', $lang)->
                     update('cms_pages', $vars, $fields);
             } else {
@@ -103,6 +104,7 @@ class CmsPages extends CmsModel
     {
         $this->Record->from('cms_pages')->
             where('uri', '=', $uri)->
+            where('company_id', '=', Configure::get('Blesta.company_id'))->
             delete();
     }
 
