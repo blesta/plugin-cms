@@ -69,18 +69,21 @@ class CmsPages extends CmsModel
             $lang = Configure::get('Blesta.language');
         }
 
-        $page = $this->Record->select()->from('cms_pages')->
-            where('uri', '=', $uri)->
-            where('company_id', '=', $company_id)->
-            where('lang', '=', $lang)->
-            fetch();
-
-        if (!$page) {
+        try {
             $page = $this->Record->select()->from('cms_pages')->
                 where('uri', '=', $uri)->
                 where('company_id', '=', $company_id)->
-                where('lang', '=', 'en_us')->
+                where('lang', '=', $lang)->
                 fetch();
+
+            if (!$page) {
+                $page = $this->Record->select()->from('cms_pages')->
+                    where('uri', '=', $uri)->
+                    where('company_id', '=', $company_id)->
+                    fetch();
+            }
+        } catch (PDOException $e) {
+            return false;
         }
 
         return $page;

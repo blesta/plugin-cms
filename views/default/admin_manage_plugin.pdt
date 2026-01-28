@@ -70,7 +70,6 @@
         $this->Widget->end();
         ?>
 
-<script type="text/javascript" src="<?php echo VENDORWEBDIR . 'ace/src-min/ace.js';?>"></script>
 <script type="text/javascript">
     $(document).ready(function() {
         // Set tabs
@@ -89,29 +88,5 @@
             hideAllTabs();
             $('#portal_form .main_tab#tab_' + tab).show();
         });
-
-        initializeEditor('content');
     });
-
-    function initializeEditor(selector) {
-        // Initialize Ace editor
-        var editor = ace.edit(selector);
-        editor.session.setMode('ace/mode/html');
-        $('.ace_editor').addClass('border rounded m-0').css('min-height', '250px');
-
-        editor.session.on('change', function() {
-            if ($('input[name=\"' + selector + '\"]').length == 0) {
-                $('.common_box form').prepend('<input type=\"hidden\" name=\"' + selector + '\" value=\"\"/>');
-            }
-            $('input[name=\"' + selector + '\"]').val(editor.getValue());
-        });
-
-        // Submit editor content
-        $('.common_box form').on('submit', function(event) {
-            if ($('input[name=\"' + selector + '\"]').length == 0) {
-                $('.common_box form').prepend('<input type=\"hidden\" name=\"' + selector + '\" value=\"\"/>');
-            }
-            $('input[name=\"' + selector + '\"]').val(editor.getValue());
-        });
-    }
 </script>
