@@ -59,11 +59,8 @@
         </div>
     <?php
     if (isset($this->Pagination) && $this->Pagination->hasPages()) {
-    ?>
-        <div class="card-footer">
-            <?php $this->Pagination->build();?>
-        </div>
-    <?php
+        $this->Widget->footer();
+        $this->Pagination->build();
     }
     ?>
     <?php } else { ?>
