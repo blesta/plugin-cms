@@ -5,8 +5,8 @@
 
     $buttons = [
         [
-            'icon' => 'bi bi-plus-lg me-1',
-            'name' => $this->_('AdminMain.index.add', true),
+            'icon' => 'bi bi-plus-lg',
+            'name' => '',
             'attributes' => [
                 'title' => $this->_('AdminMain.index.add', true),
                 'href' => $this->Html->safe($this->base_uri . 'plugin/cms/admin_main/manage')
@@ -25,16 +25,18 @@
                 <thead>
                     <tr>
                         <th>
-                            <a href="<?= $this->Html->safe($this->base_uri . 'plugin/cms/admin_main/index?sort=uri&order=' . ($sort == 'uri' ? $negate_order : $order));?>" class="ajax<?= $this->Html->safe($sort == 'uri' ? ' ' . $order : '');?>">
+                            <a href="<?= $this->Html->safe($this->base_uri . 'plugin/cms/admin_main/index?sort=uri&order=' . ($sort == 'uri' ? $negate_order : $order));?>" class="ajax text-decoration-none">
                                 <?php $this->_('AdminMain.index.heading.uri'); ?>
+                                <?php if ($sort == 'uri') { ?><i class="bi bi-chevron-<?= $order == 'asc' ? 'up' : 'down'; ?>"></i><?php } ?>
                             </a>
                         </th>
                         <th>
-                            <a href="<?= $this->Html->safe($this->base_uri . 'plugin/cms/admin_main/index?sort=title&order=' . ($sort == 'title' ? $negate_order : $order));?>" class="ajax<?= $this->Html->safe($sort == 'title' ? ' ' . $order : '');?>">
+                            <a href="<?= $this->Html->safe($this->base_uri . 'plugin/cms/admin_main/index?sort=title&order=' . ($sort == 'title' ? $negate_order : $order));?>" class="ajax text-decoration-none">
                                 <?php $this->_('AdminMain.index.heading.title'); ?>
+                                <?php if ($sort == 'title') { ?><i class="bi bi-chevron-<?= $order == 'asc' ? 'up' : 'down'; ?>"></i><?php } ?>
                             </a>
                         </th>
-                        <th><?php $this->_('AdminMain.index.heading.options') ?></th>
+                        <th style="width: 80px;"><?php $this->_('AdminMain.index.heading.options') ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,12 +46,16 @@
                             <td><?= $this->Html->safe($page->uri) ?></td>
                             <td><?= $this->Html->safe($page->title) ?></td>
                             <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <a class="btn btn-outline-secondary btn-sm" href="<?= $this->Html->safe($this->base_uri . 'plugin/cms/admin_main/manage/?' . http_build_query(['uri' => $page->uri])) ?>"><?php $this->_('AdminMain.index.edit') ?></a>
-                                    <?php $this->Form->create($this->base_uri . 'plugin/cms/admin_main/delete', ['class' => 'd-inline']) ?>
-                                        <?php $this->Form->fieldHidden('uri', $page->uri) ?>
-                                        <button type="button" class="btn btn-danger btn-sm modal-confirm-delete" data-confirm-message="<?php $this->_('AdminMain.modal.delete') ?>"><?php $this->_('AdminMain.index.delete') ?></button>
-                                    <?php $this->Form->end() ?>
+                                <div class="d-flex gap-2">
+                                    <a class="btn btn-sm btn-outline-secondary" href="<?= $this->Html->safe($this->base_uri . 'plugin/cms/admin_main/manage/?' . http_build_query(['uri' => $page->uri])) ?>" title="<?php $this->_('AdminMain.index.edit') ?>">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger cms-delete-btn"
+                                        data-delete-uri="<?php echo $this->Html->safe($page->uri);?>"
+                                        data-confirm-message="<?php echo $this->Html->safe($this->_('AdminMain.modal.delete', true));?>"
+                                        title="<?php $this->_('AdminMain.index.delete') ?>">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -64,9 +70,69 @@
     }
     ?>
     <?php } else { ?>
-        <div class="card-body text-center text-muted py-4">
-            <i class="bi bi-file-earmark-text" style="font-size: 2rem; opacity: 0.3;"></i>
-            <p class="mt-2 mb-0"><?php $this->_('AdminMain.index.empty') ?></p>
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.3;"></i>
+            <p class="mt-3 mb-0"><?php $this->_('AdminMain.index.empty') ?></p>
         </div>
     <?php } ?>
 <?php $this->Widget->end() ?>
+
+<?php
+// Delete form outside widget so it survives AJAX replacement
+$this->Form->create($this->base_uri . 'plugin/cms/admin_main/delete', ['id' => 'cms_delete_form']);
+$this->Form->fieldHidden('uri', '', ['id' => 'cms_delete_uri']);
+$this->Form->end();
+?>
+
+<script>
+document.addEventListener('click', function(e) {
+    var deleteBtn = e.target.closest('.cms-delete-btn');
+    if (!deleteBtn) return;
+
+    e.preventDefault();
+    var deleteUri = deleteBtn.getAttribute('data-delete-uri');
+    var confirmMessage = deleteBtn.getAttribute('data-confirm-message');
+
+    document.getElementById('cms_delete_uri').value = deleteUri;
+
+    var modalEl = document.createElement('div');
+    modalEl.className = 'modal fade';
+    modalEl.setAttribute('tabindex', '-1');
+    modalEl.innerHTML =
+        '<div class="modal-dialog modal-dialog-centered">' +
+        '<div class="modal-content">' +
+        '<div class="modal-header border-0 pb-0">' +
+        '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>' +
+        '</div>' +
+        '<div class="modal-body text-center py-4">' +
+        '<div class="mb-3"><i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 4rem;"></i></div>' +
+        '<h5 class="modal-title mb-3">Confirm Delete</h5>' +
+        '<p class="text-secondary">' + confirmMessage + '</p>' +
+        '</div>' +
+        '<div class="modal-footer border-0 justify-content-center">' +
+        '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>' +
+        '<button type="button" class="btn btn-danger btn-confirm">Delete</button>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
+
+    document.body.appendChild(modalEl);
+    var modal = new bootstrap.Modal(modalEl);
+    var confirmed = false;
+
+    modalEl.querySelector('.btn-confirm').addEventListener('click', function() {
+        confirmed = true;
+        this.blur();
+        modal.hide();
+    });
+
+    modalEl.addEventListener('hidden.bs.modal', function() {
+        modalEl.remove();
+        if (confirmed) {
+            document.getElementById('cms_delete_form').submit();
+        }
+    });
+
+    modal.show();
+});
+</script>
