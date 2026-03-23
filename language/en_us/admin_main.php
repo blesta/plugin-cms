@@ -6,7 +6,7 @@ $lang['AdminMain.index.boxtitle'] = 'CMS Pages';
 
 $lang['AdminMain.index.heading.uri'] = 'URI';
 $lang['AdminMain.index.heading.title'] = 'Title';
-$lang['AdminMain.index.heading.options'] = 'Options';
+$lang['AdminMain.index.heading.options'] = 'Actions';
 
 $lang['AdminMain.index.add'] = 'Add Page';
 $lang['AdminMain.index.edit'] = 'Edit';
