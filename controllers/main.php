@@ -27,10 +27,14 @@ class Main extends CmsController
         // Use the same structure as that of the client portal for the company given
         $this->structure->setDefaultView(APPDIR);
         $this->structure->setView(null, 'client' . DS . $this->layout);
+
+        // The stylesheet has to follow the directory the view resolves to. That is settled
+        // per file when the view renders, so it cannot be read off the view here
+        $view_dir = $this->getPluginViewDir('main') ?? $this->view->view;
         $this->structure->set(
             'custom_head',
             '<link href="' . Router::makeURI(str_replace('index.php/', '', WEBDIR) . $this->view->view_path)
-            . 'views/' . $this->view->view . '/css/styles.css" rel="stylesheet" type="text/css" />'
+            . 'views/' . $view_dir . '/css/styles.css" rel="stylesheet" type="text/css" />'
         );
 
         $this->base_uri = WEBDIR;
