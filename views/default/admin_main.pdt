@@ -25,15 +25,15 @@
                 <thead>
                     <tr>
                         <th>
-                            <a href="<?= $this->Html->safe($this->base_uri . 'plugin/cms/admin_main/index?sort=uri&order=' . ($sort == 'uri' ? $negate_order : $order));?>" class="ajax text-decoration-none">
+                            <a href="<?php echo $this->Html->safe($this->base_uri . 'plugin/cms/admin_main/index?sort=uri&order=' . ($sort == 'uri' ? $negate_order : $order));?>" class="ajax text-decoration-none">
                                 <?php $this->_('AdminMain.index.heading.uri'); ?>
-                                <?php if ($sort == 'uri') { ?><i class="bi bi-chevron-<?= $order == 'asc' ? 'up' : 'down'; ?>"></i><?php } ?>
+                                <?php if ($sort == 'uri') { ?><i class="bi bi-chevron-<?php echo $order == 'asc' ? 'up' : 'down'; ?>"></i><?php } ?>
                             </a>
                         </th>
                         <th>
-                            <a href="<?= $this->Html->safe($this->base_uri . 'plugin/cms/admin_main/index?sort=title&order=' . ($sort == 'title' ? $negate_order : $order));?>" class="ajax text-decoration-none">
+                            <a href="<?php echo $this->Html->safe($this->base_uri . 'plugin/cms/admin_main/index?sort=title&order=' . ($sort == 'title' ? $negate_order : $order));?>" class="ajax text-decoration-none">
                                 <?php $this->_('AdminMain.index.heading.title'); ?>
-                                <?php if ($sort == 'title') { ?><i class="bi bi-chevron-<?= $order == 'asc' ? 'up' : 'down'; ?>"></i><?php } ?>
+                                <?php if ($sort == 'title') { ?><i class="bi bi-chevron-<?php echo $order == 'asc' ? 'up' : 'down'; ?>"></i><?php } ?>
                             </a>
                         </th>
                         <th style="width: 80px;"><?php $this->_('AdminMain.index.heading.options') ?></th>
@@ -43,11 +43,11 @@
                     <?php for ($i = 0; $i < $num_pages; $i++) { ?>
                         <?php $page = $pages[$i] ?>
                         <tr>
-                            <td><?= $this->Html->safe($page->uri) ?></td>
-                            <td><?= $this->Html->safe($page->title) ?></td>
+                            <td><?php echo $this->Html->safe($page->uri) ?></td>
+                            <td><?php echo $this->Html->safe($page->title) ?></td>
                             <td>
                                 <div class="d-flex gap-2">
-                                    <a class="btn btn-sm btn-outline-secondary" href="<?= $this->Html->safe($this->base_uri . 'plugin/cms/admin_main/manage/?' . http_build_query(['uri' => $page->uri])) ?>" title="<?php $this->_('AdminMain.index.edit') ?>">
+                                    <a class="btn btn-sm btn-outline-secondary" href="<?php echo $this->Html->safe($this->base_uri . 'plugin/cms/admin_main/manage/?' . http_build_query(['uri' => $page->uri])) ?>" title="<?php $this->_('AdminMain.index.edit') ?>">
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     <?php $this->Form->create($this->base_uri . 'plugin/cms/admin_main/delete', ['class' => 'd-inline']) ?>
