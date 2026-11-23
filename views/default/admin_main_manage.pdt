@@ -98,68 +98,14 @@
 <script type="text/javascript">
 document.addEventListener('DOMContentLoaded', function() {
     // CKEditor initialization for wysiwyg textareas
+    var editorOptions = {language: '<?php echo substr(Configure::get('Blesta.language'), 0, 2);?>'};
+
     function initCKEditorOnTextarea(textarea) {
         if (!textarea || textarea.ckeditorInstance) {
-            return;
+            return; // Already initialized
         }
 
-        if (typeof ClassicEditor === 'undefined') {
-            setTimeout(function() { initCKEditorOnTextarea(textarea); }, 500);
-            return;
-        }
-
-        var config = {
-            toolbar: {
-                items: [
-                    'heading',
-                    'fontFamily',
-                    'fontSize',
-                    'highlight',
-                    '|',
-                    'fontColor',
-                    'fontBackgroundColor',
-                    'bold',
-                    'italic',
-                    'link',
-                    'removeFormat',
-                    '|',
-                    'bulletedList',
-                    'numberedList',
-                    'alignment',
-                    'indent',
-                    'outdent',
-                    '|',
-                    'imageUpload',
-                    'blockQuote',
-                    'insertTable',
-                    'mediaEmbed',
-                    'codeBlock',
-                    'htmlEmbed',
-                    'horizontalLine',
-                    '|',
-                    'sourceEditing',
-                    'undo',
-                    'redo'
-                ]
-            },
-            image: {
-                toolbar: [
-                    'imageTextAlternative',
-                    'imageStyle:inline',
-                    'imageStyle:block',
-                    'imageStyle:side'
-                ]
-            },
-            language: '<?php echo substr(Configure::get('Blesta.language'), 0, 2);?>'
-        };
-
-        ClassicEditor.create(textarea, config)
-            .then(function(editor) {
-                textarea.ckeditorInstance = editor;
-            })
-            .catch(function(error) {
-                console.error('CKEditor initialization error:', error);
-            });
+        blestaBindWysiwygEditor(textarea, editorOptions);
     }
 
     // Initialize CKEditor on all visible wysiwyg textareas
