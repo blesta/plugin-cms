@@ -38,7 +38,7 @@
         </ul>
         <div class="tab-content tab-content-connected mb-3">
             <?php foreach ($languages ?? [] as $i => $lang) { ?>
-                <?php $page =(object)($vars[$lang->code] ?? $pages[$lang->code] ?? []); ?>
+                <?php $page = (object)($vars[$lang->code] ?? $pages[$lang->code] ?? []); ?>
                 <div class="tab-pane fade<?php echo ($lang->code ?? null) == Configure::get('Blesta.language') ? ' show active' : '' ?>" id="tab-<?php echo $this->Html->safe($lang->code) ?>" role="tabpanel">
                     <div class="mb-3">
                         <?php $this->Form->label($this->_('AdminMain.manage.label.title', true), 'title-' . $lang->code, ['class' => 'form-label']); ?>
