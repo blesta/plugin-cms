@@ -1,3 +1,5 @@
 <?php
-    echo $message ?? null;
-    echo $content ?? null;
+$this->Css->setFile('styles.css', 'head', $this->view_dir . 'css/');
+
+echo $message ?? null;
+echo $content ?? null;
