@@ -71,15 +71,9 @@
 /* =============================================
    Icon sizes
    -
-   Meridian maps the FontAwesome classes onto Bootstrap Icons but carries none of
-   the sizing classes, so page content written against them renders at 1em.
+   Meridian maps the FontAwesome classes onto Bootstrap Icons and defines .fa-lg,
+   but not .fa-2x to .fa-5x, so page content written against them renders at 1em.
    ============================================= */
-.fa-lg {
-    font-size: 1.33em;
-    line-height: 0.75em;
-    vertical-align: -0.0667em;
-}
-
 .fa-2x {
     font-size: 2em;
 }
